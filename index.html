@@ -184,6 +184,10 @@ main.reporting .game{display:none!important}
 .chip{font-size:.78rem;font-weight:900;border-radius:999px;padding:3px 9px}
 .chip.ok{background:#d3f5e5;color:#1f6b48}
 .chip.retry{background:#ffe0e5;color:#9b2c3e}
+.autonext{font-weight:800;color:var(--lilac)}
+.timer{width:70%;height:6px;border-radius:99px;background:var(--panel);overflow:hidden}
+.timer span{display:block;height:100%;background:var(--gold);animation:fill 6s linear forwards}
+@keyframes fill{from{width:0}to{width:100%}}
 #confetti{position:fixed;inset:0;pointer-events:none;z-index:49}
 button:focus-visible,.cell:focus-visible{outline:3px solid var(--lilac);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition:none!important}}
@@ -524,7 +528,9 @@ function finish(total){
     <div class="eq">${p.a} × ${p.b} = ${total}</div>
     <div class="earned" aria-label="${earned} stars">${"⭐".repeat(earned)}${"☆".repeat(3-earned)}</div>
     <div>Your ${p.recipe} are out of the oven ${p.treat}</div>${streakNote}
-    <button class="go" id="next">${S.ch.length>=QN?"See your report card 📜":`Bake order ${S.ch.length+1} of ${QN} ✨`}</button>`;
+    <div class="autonext" id="autonext">${S.ch.length>=QN?"Your report card is coming up…":`Order ${S.ch.length+1} of ${QN} is coming up…`}</div><div class="timer"><span></span></div>
+    <button class="go" id="next">${S.ch.length>=QN?"See it now 📜":"Go now ✨"}</button>`;
+  clearTimeout(S.autoT);S.autoT=setTimeout(()=>{if(S.p===p&&p.phase==="win")goNext()},6000);
   sfx.win();confetti();toast(earned===3?"Perfect bake!":"Order complete!");speak(["spell"+si,earned===3?"perfect":"complete"]);
   const after=rankOf(S.stars);
   if(after!==before)setTimeout(()=>{toast("New rank!");speak("rank");say(`You've been promoted to <strong>${after}</strong>! 🎓`,"cheer");confetti()},1400);
@@ -606,8 +612,9 @@ $("#box").addEventListener("keydown",e=>{const c=e.target.closest(".cell[data-k]
 $("#pad").addEventListener("click",e=>{const b=e.target.closest(".key");if(b)press(b.dataset.k)});
 $("#adder").addEventListener("click",e=>{const b=e.target.closest(".sl");if(!b||S.p.phase!=="choice")return;S.p.scratch.sel=[b.dataset.row,+b.dataset.i];poof(b);renderAdder();kbFocus()});
 $("#choices").addEventListener("click",e=>{const b=e.target.closest(".potion");if(b&&!b.disabled)choose(b)});
-$("#win").addEventListener("click",e=>{if(e.target.id==="next"){$("#win").hidden=true;$("#adder").hidden=true;if(S.ch.length>=QN){showReport();return}newProblem();scrollTo({top:0,behavior:"smooth"})}});
-document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>{S.mode=b.dataset.mode;S.ch=[];document.querySelector("main").classList.remove("reporting");$("#report").hidden=true;save();$("#win").hidden=true;$("#choices").hidden=true;$("#adder").hidden=true;sparkle(b,8);sfx.poof();newProblem()}));
+function goNext(){clearTimeout(S.autoT);if($("#win").hidden)return;$("#win").hidden=true;$("#adder").hidden=true;if(S.ch.length>=QN){showReport();return}newProblem();scrollTo({top:0,behavior:"smooth"})}
+$("#win").addEventListener("click",e=>{if(e.target.id==="next")goNext()});
+document.querySelectorAll(".mode").forEach(b=>b.addEventListener("click",()=>{clearTimeout(S.autoT);S.mode=b.dataset.mode;S.ch=[];document.querySelector("main").classList.remove("reporting");$("#report").hidden=true;save();$("#win").hidden=true;$("#choices").hidden=true;$("#adder").hidden=true;sparkle(b,8);sfx.poof();newProblem()}));
 $("#snd").addEventListener("click",()=>{S.sound=!S.sound;$("#snd").classList.toggle("off",!S.sound);$("#snd").textContent=S.sound?"🔔":"🔕";$("#snd").setAttribute("aria-label",S.sound?"Turn sound off":"Turn sound on");});
 document.addEventListener("keydown",e=>{if(e.target.id==="kb")return;if(e.target.closest&&e.target.closest("button")&&e.key==="Enter")return;
   if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==="Backspace")press("del");else if(e.key==="Enter")press("ok");});
