@@ -17,6 +17,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{
   background:
     radial-gradient(1200px 500px at 50% -120px,#3b2470 0%,transparent 70%),
@@ -372,6 +373,7 @@ function newProblem(){
   side.forEach((sv,i)=>top.forEach((tv,j)=>slots["c"+i+j]={want:sv*tv,val:"",ok:false,kind:"inner",i,j}));
   S.p={a,b,top,side,slots,phase:"edges",sel:"t0",miss:0,recipe:pick(RECIPES),treat:pick(TREATS),choiceTries:0};
   S.orders++;
+  const ad=$("#adder");ad.hidden=true;ad.innerHTML="";$("#choices").hidden=true;$("#choices").innerHTML="";$("#win").hidden=true;
   render();say(promptFor("t0"));if(S.ch.length)speak(["neworder","n"+a,"times","n"+b]);
 }
 function edgeKeys(){return Object.keys(S.p.slots).filter(k=>k[0]!=="c")}
